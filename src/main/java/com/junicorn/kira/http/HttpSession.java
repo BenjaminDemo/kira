@@ -21,7 +21,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
-import com.junicorn.kira.Kira;
+import com.junicorn.kira.Const;
 
 public class HttpSession {
 
@@ -74,7 +74,7 @@ public class HttpSession {
 	}
 
 	public void writeLine(String line) throws IOException {
-		channel.write(Kira.ENCODER.encode(CharBuffer.wrap(line + "\r\n")));
+		channel.write(Const.ENCODER.encode(CharBuffer.wrap(line + "\r\n")));
 	}
 	
 	public void sendResponse(HttpResponse response) {
@@ -93,60 +93,6 @@ public class HttpSession {
 			// slow silently
 			System.out.println("abo");
 		}
-		
-		/*
-		StringBuilder header = new StringBuilder();
-		header.append("HTTP/1.1").append(' ').append(resp.getStatus().getCode()).append(' ').append(resp.getStatus());
-		header.append('\r').append('\n');
-		// Set the content type header if it's not already set
-		if (!resp.getHeaders().containsKey(HttpHeader.CONTENT_TYPE)) {
-			resp.addHeader(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-//			resp.addHeader(HttpHeader.CONTENT_TYPE, "image/jpeg");
-		}
-		// Set the content length header if it's not already set
-		if (!resp.getHeaders().containsKey(HttpHeader.CONTENT_LENGTH)) {
-			resp.addHeader(HttpHeader.CONTENT_LENGTH, resp.getResponseLength());
-		}
-		// Copy in the headers
-		for (Entry<String, List<Object>> entry : resp.getHeaders().entrySet()) {
-			String headerName = HttpUtil.capitalizeHeader(entry.getKey());
-			for(Object o : entry.getValue()) {
-				header.append(headerName);
-				header.append(':').append(' ');
-				header.append(o);
-				header.append('\r').append('\n');
-			}
-		}
-		header.append('\r').append('\n');
-		// Write the header
-		output.write(header.toString().getBytes("UTF-8"));
-		// Responses can be InputStreams or Strings
-		if (resp.getResponse() instanceof InputStream) {
-			// InputStreams will block the session thread (No big deal) and send
-			// data without loading it into memory
-			InputStream res = resp.getResponse();
-			try {
-				// Write the body
-				byte[] buffer = new byte[1024];
-				while (true) {
-					int read = res.read(buffer, 0, buffer.length);
-					if (read == -1)
-						break;
-					output.write(buffer, 0, read);
-				}
-			} finally {
-				res.close();
-			}
-		} else if (resp.getResponse() instanceof String) {
-			String responseString = (String) resp.getResponse();
-			output.write(responseString.getBytes("UTF-8"));
-		} else if (resp.getResponse() instanceof byte[]) {
-			output.write((byte[]) resp.getResponse());
-		}
-		// Close it if required.
-		if (close) {
-			socket.close();
-		}*/
 	}
 	
 	public SocketChannel getChannel() {

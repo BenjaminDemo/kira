@@ -206,11 +206,4 @@ public class HttpRequest {
 		}
 	}
 	
-	@Override
-	public String toString() {
-		return "HTTPRequest [uri=" + uri + ", method=" + method + ", session=" + session + ", queryString="
-				+ queryString + ", data=" + data + ", getData=" + getData + ", postData=" + postData + ", cookies="
-				+ cookies + ", headers=" + headers + "]";
-	}
-	
 }

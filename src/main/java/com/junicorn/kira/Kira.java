@@ -21,8 +21,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -41,8 +39,6 @@ import com.junicorn.kira.http.HttpSession;
  */
 public class Kira implements Runnable {
 
-	public static final Charset CHARSET = Charset.forName("UTF-8");
-	public static final CharsetEncoder ENCODER = CHARSET.newEncoder();
 	private Selector selector = Selector.open();
 
 	// socket服务

@@ -15,8 +15,26 @@
  */
 package com.junicorn.kira;
 
-public class Const {
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
-	public static final String SAMPLE_NAME = "sample";
+/**
+ * 常量类
+ * 
+ * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
+ * @since	1.0
+ */
+public class Const {
+	
+	/**
+	 * 默认编码
+	 */
+	public static final Charset CHARSET = Charset.forName("UTF-8");
+	
+	/**
+	 * 编码器
+	 */
+	public static final CharsetEncoder ENCODER = CHARSET.newEncoder();
+
 	
 }
