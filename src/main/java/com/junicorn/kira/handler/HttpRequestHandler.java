@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.junicorn.kira.exception;
+package com.junicorn.kira.handler;
 
-public class KiraException extends RuntimeException {
+import com.junicorn.kira.http.HttpRequest;
+import com.junicorn.kira.http.HttpResponse;
 
-	private static final long serialVersionUID = 1L;
-
-	public KiraException() {
-		// TODO Auto-generated constructor stub
-	}
+/**
+ * 请求处理器接口
+ */
+public interface HttpRequestHandler {
 	
-	public KiraException(String msg) {
-		super(msg);
-	}
+	public HttpResponse handleRequest(HttpRequest request);
 	
 }
