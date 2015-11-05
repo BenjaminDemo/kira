@@ -20,25 +20,23 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.junicorn.kira.handler.RequestHandler;
 import com.junicorn.kira.http.HttpRequest;
 import com.junicorn.kira.http.HttpResponse;
-import com.junicorn.kira.http.HttpSession;
 
-/**
- * 服务主类
- * 
- * @author <a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
- * @since 1.0
- */
-public class Kira implements Runnable {
+import blade.kit.log.Logger;
 
+public class Kira {
+
+	private static final Logger LOGGER = Logger.getLogger(Kira.class);
+	
 	private Selector selector = Selector.open();
 
 	// socket服务
@@ -85,100 +83,38 @@ public class Kira implements Runnable {
 	/**
 	 * 添加一个请求处理器
 	 * 
-	 * @param httpRequestHandler
+	 * @param requestHandler
 	 */
-	public Kira addHandler(RequestHandler httpRequestHandler) {
-		handlers.add(httpRequestHandler);
+	public Kira addHandler(RequestHandler requestHandler) {
+		handlers.add(requestHandler);
 		return this;
 	}
 
 	/**
 	 * 移除一个请求处理器
 	 * 
-	 * @param httpRequestHandler
+	 * @param requestHandler
 	 */
-	public void removeRequestHandler(RequestHandler httpRequestHandler) {
-		handlers.remove(httpRequestHandler);
+	public void removeRequestHandler(RequestHandler requestHandler) {
+		handlers.remove(requestHandler);
 	}
-
-	public void start() {
-		isRunning = true;
-		Thread t = new Thread(this);
-		t.setName("BiezhiHttpServer");
-		t.start();
+	
+	/**
+	 * 启动服务
+	 */
+	public void start(){
+		this.execute(new KiraServer(this));
+		LOGGER.info("Kira Server Listen on 0.0.0.0:" + server.socket().getLocalPort());
 	}
-
-	@Override
-	public void run() {
-		while (isRunning) {
-			try {
-				selector.selectNow();
-				Iterator<SelectionKey> i = selector.selectedKeys().iterator();
-				while (i.hasNext()) {
-					SelectionKey key = i.next();
-					i.remove();
-					if (!key.isValid()) {
-						continue;
-					}
-					try {
-						// 获得新连接
-						if (key.isAcceptable()) {
-							// 接收socket
-							SocketChannel client = server.accept();
-
-							// 非阻塞模式
-							client.configureBlocking(false);
-
-							// 注册选择器到socket
-							client.register(selector, SelectionKey.OP_READ);
-
-							// 从连接上读
-						} else if (key.isReadable()) {
-
-							// 获取socket通道
-							SocketChannel client = (SocketChannel) key.channel();
-							// 获取回话
-							HttpSession session = (HttpSession) key.attachment();
-
-							// 如果没有则创建一个回话
-							if (session == null) {
-								session = new HttpSession(client);
-								key.attach(session);
-							}
-
-							// 读取回话数据
-							session.readData();
-
-							// 消息解码
-							String line;
-							while ((line = session.read()) != null) {
-								if (line.isEmpty()) {
-									this.handle(new HttpRequest(session));
-									session.close();
-								}
-							}
-						}
-					} catch (Exception ex) {
-						System.err.println("Error handling client: " + key.channel());
-						if (isDebug()) {
-							ex.printStackTrace();
-						} else {
-							System.err.println(ex);
-							System.err.println("\tat " + ex.getStackTrace()[0]);
-						}
-						if (key.attachment() instanceof HttpSession) {
-							((HttpSession) key.attachment()).close();
-						}
-					}
-				}
-			} catch (IOException ex) {
-				// 停止服务
-				shutdown();
-				throw new RuntimeException(ex);
-			}
-		}
-	}
-
+	
+	private ExecutorService executor;
+    private Future<?> execute(Runnable runnable) {
+        if (this.executor == null) {
+            this.executor = Executors.newCachedThreadPool();
+        }
+        return executor.submit(runnable);
+    }
+	
 	/**
 	 * 处理请求
 	 * 
@@ -186,7 +122,7 @@ public class Kira implements Runnable {
 	 * @throws IOException
 	 */
 	protected void handle(HttpRequest request) throws IOException {
-
+		
 		for (RequestHandler requestHandler : handlers) {
 			HttpResponse resp = requestHandler.handle(request);
 			if (resp != null) {
@@ -219,7 +155,7 @@ public class Kira implements Runnable {
 	public boolean isRunning() {
 		return isRunning;
 	}
-
+	
 	public boolean isDebug() {
 		return debug;
 	}

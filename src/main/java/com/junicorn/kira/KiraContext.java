@@ -18,6 +18,12 @@ package com.junicorn.kira;
 import java.io.FileNotFoundException;
 import java.util.Map;
 
+/**
+ * Kira上下文
+ * 
+ * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
+ * @since	1.0
+ */
 public class KiraContext {
 
 	private String rootPath;
