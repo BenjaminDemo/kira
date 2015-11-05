@@ -20,7 +20,8 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.util.ArrayList;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -30,9 +31,16 @@ import java.util.concurrent.Future;
 import com.junicorn.kira.handler.RequestHandler;
 import com.junicorn.kira.http.HttpRequest;
 import com.junicorn.kira.http.HttpResponse;
+import com.junicorn.kira.http.HttpSession;
 
 import blade.kit.log.Logger;
 
+/**
+ * Kira
+ * 
+ * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
+ * @since	1.0
+ */
 public class Kira {
 
 	private static final Logger LOGGER = Logger.getLogger(Kira.class);
@@ -50,9 +58,6 @@ public class Kira {
 
 	// 请求处理链
 	private List<RequestHandler> handlers = new LinkedList<RequestHandler>();
-
-	// 路由列表
-	private List<String> routers = new ArrayList<String>();
 	
 	/**
 	 * 创建一个Socket
@@ -60,14 +65,15 @@ public class Kira {
 	 * @param address
 	 * @throws IOException
 	 */
-	public void bind(InetSocketAddress address) throws IOException {
+	public Kira bind(InetSocketAddress address) throws IOException {
 		server.socket().bind(address);
 		server.configureBlocking(false);
 		server.register(selector, SelectionKey.OP_ACCEPT);
+		return this;
 	}
 
-	public void bind(int port) throws IOException {
-		bind(new InetSocketAddress(port));
+	public Kira bind(int port) throws IOException {
+		return bind(new InetSocketAddress(port));
 	}
 
 	/**
@@ -103,8 +109,75 @@ public class Kira {
 	 * 启动服务
 	 */
 	public void start(){
-		this.execute(new KiraServer(this));
 		LOGGER.info("Kira Server Listen on 0.0.0.0:" + server.socket().getLocalPort());
+		while (isRunning) {
+			try {
+				selector.selectNow();
+				Iterator<SelectionKey> i = selector.selectedKeys().iterator();
+				while (i.hasNext()) {
+					SelectionKey key = i.next();
+					i.remove();
+					if (!key.isValid()) {
+						continue;
+					}
+					try {
+						// 获得新连接
+						if (key.isAcceptable()) {
+							// 接收socket
+							SocketChannel client = server.accept();
+
+							// 非阻塞模式
+							client.configureBlocking(false);
+
+							// 注册选择器到socket
+							client.register(selector, SelectionKey.OP_READ);
+
+							// 从连接上读
+						} else if (key.isReadable()) {
+
+							// 获取socket通道
+							SocketChannel client = (SocketChannel) key.channel();
+							// 获取回话
+							HttpSession session = (HttpSession) key.attachment();
+
+							// 如果没有则创建一个回话
+							if (session == null) {
+								session = new HttpSession(client);
+								key.attach(session);
+							}
+
+							// 读取回话数据
+							session.readData();
+
+							// 消息解码
+							String line;
+							while ((line = session.read()) != null) {
+								if (line.isEmpty()) {
+									
+									
+									this.execute(new KiraExecutor(new HttpRequest(session), handlers));
+								}
+							}
+						}
+					} catch (Exception ex) {
+						System.err.println("Error handling client: " + key.channel());
+						if (isDebug()) {
+							ex.printStackTrace();
+						} else {
+							System.err.println(ex);
+							System.err.println("\tat " + ex.getStackTrace()[0]);
+						}
+						if (key.attachment() instanceof HttpSession) {
+							((HttpSession) key.attachment()).close();
+						}
+					}
+				}
+			} catch (IOException ex) {
+				// 停止服务
+				this.shutdown();
+				throw new RuntimeException(ex);
+			}
+		}
 	}
 	
 	private ExecutorService executor;
@@ -122,7 +195,6 @@ public class Kira {
 	 * @throws IOException
 	 */
 	protected void handle(HttpRequest request) throws IOException {
-		
 		for (RequestHandler requestHandler : handlers) {
 			HttpResponse resp = requestHandler.handle(request);
 			if (resp != null) {
@@ -160,12 +232,8 @@ public class Kira {
 		return debug;
 	}
 
-	public void addRoute(String route) {
-		routers.add(route);
-		System.out.println("Add route:\t" + route);
+	public List<RequestHandler> getHandlers() {
+		return handlers;
 	}
-
-	public List<String> getRoutes() {
-		return routers;
-	}
+	
 }
