@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.junicorn.kira.handler;
+package com.junicorn.kira.handler.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,11 +21,18 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import com.junicorn.kira.handler.RequestHandler;
 import com.junicorn.kira.http.HttpRequest;
 import com.junicorn.kira.http.HttpResponse;
 import com.junicorn.kira.http.HttpStatus;
 
-public class StaticFileHandler implements HttpRequestHandler {
+/**
+ * 磁盘静态文件实现的Handler
+ * 
+ * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
+ * @since	1.0
+ */
+public class StaticFileHandler implements RequestHandler {
 
 	private File documentRoot;
 
@@ -40,7 +47,7 @@ public class StaticFileHandler implements HttpRequestHandler {
 	}
 
 	@Override
-	public HttpResponse handleRequest(HttpRequest request) {
+	public HttpResponse handle(HttpRequest request) {
 		String uri = request.getUri();
 		try {
 			uri = URLDecoder.decode(uri, "UTF-8");

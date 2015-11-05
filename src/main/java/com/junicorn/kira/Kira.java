@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.junicorn.kira.handler.HttpRequestHandler;
+import com.junicorn.kira.handler.RequestHandler;
 import com.junicorn.kira.http.HttpRequest;
 import com.junicorn.kira.http.HttpResponse;
 import com.junicorn.kira.http.HttpSession;
@@ -55,10 +55,11 @@ public class Kira implements Runnable {
 	private boolean debug = true;
 
 	// 请求处理链
-	private List<HttpRequestHandler> handlers = new LinkedList<HttpRequestHandler>();
+	private List<RequestHandler> handlers = new LinkedList<RequestHandler>();
 
+	// 路由列表
 	private List<String> routers = new ArrayList<String>();
-
+	
 	/**
 	 * 创建一个Socket
 	 * 
@@ -90,8 +91,9 @@ public class Kira implements Runnable {
 	 * 
 	 * @param httpRequestHandler
 	 */
-	public void addRequestHandler(HttpRequestHandler httpRequestHandler) {
+	public Kira addHandler(RequestHandler httpRequestHandler) {
 		handlers.add(httpRequestHandler);
+		return this;
 	}
 
 	/**
@@ -99,7 +101,7 @@ public class Kira implements Runnable {
 	 * 
 	 * @param httpRequestHandler
 	 */
-	public void removeRequestHandler(HttpRequestHandler httpRequestHandler) {
+	public void removeRequestHandler(RequestHandler httpRequestHandler) {
 		handlers.remove(httpRequestHandler);
 	}
 
@@ -184,14 +186,13 @@ public class Kira implements Runnable {
 	/**
 	 * 处理请求
 	 * 
-	 * @param request
-	 *            请求对象
+	 * @param request	请求对象
 	 * @throws IOException
 	 */
 	protected void handle(HttpRequest request) throws IOException {
 
-		for (HttpRequestHandler handler : handlers) {
-			HttpResponse resp = handler.handleRequest(request);
+		for (RequestHandler requestHandler : handlers) {
+			HttpResponse resp = requestHandler.handle(request);
 			if (resp != null) {
 				request.getSession().sendResponse(resp);
 				return;
@@ -214,7 +215,7 @@ public class Kira implements Runnable {
 	public Selector getSelector() {
 		return selector;
 	}
-
+	
 	public ServerSocketChannel getServer() {
 		return server;
 	}
@@ -227,7 +228,7 @@ public class Kira implements Runnable {
 		return debug;
 	}
 
-	public void addRequestRoute(String route) {
+	public void addRoute(String route) {
 		routers.add(route);
 		System.out.println("Add route:\t" + route);
 	}

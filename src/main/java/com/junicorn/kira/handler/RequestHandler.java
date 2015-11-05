@@ -21,8 +21,8 @@ import com.junicorn.kira.http.HttpResponse;
 /**
  * 请求处理器接口
  */
-public interface HttpRequestHandler {
+public interface RequestHandler {
 	
-	public HttpResponse handleRequest(HttpRequest request);
+	public HttpResponse handle(HttpRequest request);
 	
 }

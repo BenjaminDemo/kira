@@ -1,3 +1,4 @@
 # kira
 
-kira is a HTTP server by Java.
+kira 是一个Java开发的HTTP服务器。
+
