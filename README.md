@@ -1,6 +1,6 @@
 # kira
 
-kira 是一个Java开发的HTTP服务器。
+kira 是一个Java开发的HTTP服务器，使用了NIO和多线程技术实现。
 
 # 使用
 

@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.junicorn.kira;
-
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
+package com.junicorn.kira.kit;
 
 /**
- * 常量类
+ * 路径工具类
  * 
  * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
  * @since	1.0
  */
-public class Const {
-	
-	/**
-	 * 默认编码
-	 */
-	public static final Charset CHARSET = Charset.forName("UTF-8");
-	
-	/**
-	 * 编码器
-	 */
-	public static final CharsetEncoder ENCODER = CHARSET.newEncoder();
+public final class PathKit {
 
-	/**
-	 * 默认主页文件
-	 */
-	public static String DEFAULT_ROOTFILE = "index.html";
+	public static String fixPath(String path) {
+		if (path == null) {
+			return "/";
+		}
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		if (path.length() > 1 && path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return path;
+	}
+
+	public static String cleanPath(String path){
+		if (path == null) {
+			return null;
+		}
+		return path.replaceAll("[/]+", "/");
+	}
 	
 }

@@ -21,10 +21,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import com.junicorn.kira.Const;
 import com.junicorn.kira.handler.RequestHandler;
 import com.junicorn.kira.http.HttpRequest;
 import com.junicorn.kira.http.HttpResponse;
 import com.junicorn.kira.http.HttpStatus;
+import com.junicorn.kira.kit.PathKit;
+
+import blade.kit.log.Logger;
 
 /**
  * 磁盘静态文件实现的Handler
@@ -32,17 +36,20 @@ import com.junicorn.kira.http.HttpStatus;
  * @author	<a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
  * @since	1.0
  */
-public class StaticFileHandler implements RequestHandler {
+public class AssetHandler implements RequestHandler {
 
-	private File documentRoot;
+	private static final Logger LOGGER = Logger.getLogger();
+	
+	private File rootFile;
 
-	private String documentRootPath;
+	private String rootPath;
 
-	public StaticFileHandler(File documentRoot) {
-		this.documentRoot = documentRoot;
+	public AssetHandler(File rootFile) {
+		this.rootFile = rootFile;
+		this.rootPath = rootFile.getPath();
 	}
 	
-	public StaticFileHandler(String rootPath) {
+	public AssetHandler(String rootPath) {
 		this(new File(rootPath));
 	}
 
@@ -54,31 +61,39 @@ public class StaticFileHandler implements RequestHandler {
 		} catch (UnsupportedEncodingException e1) {
 			uri = uri.replace("%20", " ");
 		}
-		File file = new File(documentRoot, uri);
+		
+		LOGGER.info("Request URI > " + uri);
+		
+		uri = PathKit.fixPath(uri);
+		
+		if(uri.equals("/")){
+			uri = "/" + Const.DEFAULT_ROOTFILE;
+		}
+		
+		File file = new File(rootFile, uri);
 		if (file.exists() && !file.isDirectory()) {
 			try {
-				if (documentRootPath == null) {
-					documentRootPath = documentRoot.getAbsolutePath();
-					if (documentRootPath.endsWith("/") || documentRootPath.endsWith(".")) {
-						documentRootPath = documentRootPath.substring(0, documentRootPath.length() - 1);
+				if (rootPath == null) {
+					rootPath = rootFile.getAbsolutePath();
+					if (rootPath.endsWith("/") || rootPath.endsWith(".")) {
+						rootPath = rootPath.substring(0, rootPath.length() - 1);
 					}
 				}
+				
 				String requestPath = file.getCanonicalPath();
 				if (requestPath.endsWith("/")) {
 					requestPath = requestPath.substring(0, requestPath.length() - 1);
 				}
-				if (!requestPath.startsWith(documentRootPath)) {
+				if (!requestPath.startsWith(rootPath)) {
 					return new HttpResponse().reason(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.toString());
 				}
-			} catch (IOException e) {
-				return new HttpResponse().reason(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString());
-			}
-			try {
+				
 				HttpResponse res = new HttpResponse(HttpStatus.OK, new FileInputStream(file));
 				res.setLength(file.length());
 				return res;
+				
 			} catch (IOException e) {
-				e.printStackTrace();
+				return new HttpResponse().reason(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.toString());
 			}
 		}
 		return null;

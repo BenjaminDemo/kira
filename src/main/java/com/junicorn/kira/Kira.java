@@ -47,17 +47,30 @@ public class Kira {
 	
 	private Selector selector = Selector.open();
 
-	// socket服务
+	/**
+	 * socket服务
+	 */
 	private ServerSocketChannel server = ServerSocketChannel.open();
 
-	// 默认运行
-	private boolean isRunning = true;
+	/**
+	 * 是否已经运行
+	 */
+	private boolean isRunning = false;
 
-	// debug模式
+	/**
+	 * debug模式
+	 */
 	private boolean debug = true;
 
-	// 请求处理链
+	/**
+	 * 处理器
+	 */
 	private List<RequestHandler> handlers = new LinkedList<RequestHandler>();
+	
+	/**
+	 * HttpWeb上下文路径
+	 */
+	private String contextPath = "/";
 	
 	/**
 	 * 创建一个Socket
@@ -109,6 +122,7 @@ public class Kira {
 	 * 启动服务
 	 */
 	public void start(){
+		isRunning = true;
 		LOGGER.info("Kira Server Listen on 0.0.0.0:" + server.socket().getLocalPort());
 		while (isRunning) {
 			try {

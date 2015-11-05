@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.junicorn.kira.util.HttpUtil;
+import com.junicorn.kira.kit.Httpkit;
 
 
 /**
@@ -67,7 +67,7 @@ public class HttpRequest {
 		if(questionIdx != -1) {
 			String queryString = uri.substring(questionIdx+1);
 			this.setQueryString(queryString);
-			this.setGetData(HttpUtil.parseData(queryString));
+			this.setGetData(Httpkit.parseData(queryString));
 			
 			uri = uri.substring(0, questionIdx);
 			this.setUri(uri);
