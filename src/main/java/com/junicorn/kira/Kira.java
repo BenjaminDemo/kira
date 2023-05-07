@@ -250,5 +250,10 @@ public class Kira {
 	public List<RequestHandler> getHandlers() {
 		return handlers;
 	}
+
+	public void log() {
+
+		System.out.println("this is log demo branchdemo");
+	}
 	
 }
