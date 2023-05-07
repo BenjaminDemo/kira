@@ -86,6 +86,7 @@ public class Kira {
 	}
 
 	public Kira bind(int port) throws IOException {
+		System.out.println("bind demo");
 		return bind(new InetSocketAddress(port));
 	}
 
