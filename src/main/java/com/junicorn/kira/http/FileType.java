@@ -44,7 +44,7 @@ public enum FileType {
 	
 	/**
 	 * Constructor.
-	 * @param type 
+	 * @param value 文件类型
 	 */
 	private FileType(String value) {
 		this.value = value;
